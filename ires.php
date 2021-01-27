@@ -42,54 +42,54 @@ function uep_custom_post_type() {
         'description'   =>   __( 'A list of upcoming courses', 'uep' ),
         'public'        =>   true,
         'show_in_menu'  =>   true,
-        'menu_icon'     =>   IMAGES . 'event.svg',
+        'menu_icon'     =>   IMAGES . 'course.png',
         'has_archive'   =>   true,
         'rewrite'       =>   true,
         'supports'      =>   $supports
     );
  
-    register_post_type( 'event', $args );
+    register_post_type( 'course', $args );
 }
 
-function uep_add_event_info_metabox() {
+function uep_add_course_info_metabox() {
     add_meta_box(
-        'uep-event-info-metabox',
+        'uep-course-info-metabox',
         __( 'Course Schedule', 'uep' ),
-        'uep_render_event_info_metabox',
-        'event',
+        'uep_render_course_info_metabox',
+        'course',
         'side',
         'core'
     );
 }
-add_action( 'add_meta_boxes', 'uep_add_event_info_metabox' );
+add_action( 'add_meta_boxes', 'uep_add_course_info_metabox' );
 
 add_action( 'init', 'uep_custom_post_type' );
 
-function uep_render_event_info_metabox( $post ) {
+function uep_render_course_info_metabox( $post ) {
 
     // generate a nonce field
-    wp_nonce_field( basename( __FILE__ ), 'uep-event-info-nonce' );
+    wp_nonce_field( basename( __FILE__ ), 'uep-course-info-nonce' );
  
     // get previously saved meta values (if any)
-    $event_start_date = get_post_meta( $post->ID, 'event-start-date', true );
-    $event_end_date = get_post_meta( $post->ID, 'event-end-date', true );
-    $event_venue = get_post_meta( $post->ID, 'event-venue', true );
+    $course_start_date = get_post_meta( $post->ID, 'course-start-date', true );
+    $course_end_date = get_post_meta( $post->ID, 'course-end-date', true );
+    $course_venue = get_post_meta( $post->ID, 'course-venue', true );
  
     // if there is previously saved value then retrieve it, else set it to the current time
-    $event_start_date = ! empty( $event_start_date ) ? $event_start_date : time();
+    $course_start_date = ! empty( $course_start_date ) ? $course_start_date : time();
  
-    //we assume that if the end date is not present, event ends on the same day
-    $event_end_date = ! empty( $event_end_date ) ? $event_end_date : $event_start_date;
+    //we assume that if the end date is not present, course ends on the same day
+    $course_end_date = ! empty( $course_end_date ) ? $course_end_date : $course_start_date;
      ?>
  
-<label for="uep-event-start-date"><?php _e( 'Course Start Date:', 'uep' ); ?></label>
-        <input class="widefat uep-event-date-input" id="uep-event-start-date" type="text" name="uep-event-start-date" placeholder="Format: February 18, 2014" value="<?php echo date( 'F d, Y', $event_start_date ); ?>" />
+<label for="uep-course-start-date"><?php _e( 'Course Start Date:', 'uep' ); ?></label>
+        <input class="widefat uep-course-date-input" id="uep-course-start-date" type="text" name="uep-course-start-date" placeholder="Format: February 18, 2014" value="<?php echo date( 'F d, Y', $course_start_date ); ?>" />
  
-<label for="uep-event-end-date"><?php _e( 'Course End Date:', 'uep' ); ?></label>
-        <input class="widefat uep-event-date-input" id="uep-event-end-date" type="text" name="uep-event-end-date" placeholder="Format: February 18, 2014" value="<?php echo date( 'F d, Y', $event_end_date ); ?>" />
+<label for="uep-course-end-date"><?php _e( 'Course End Date:', 'uep' ); ?></label>
+        <input class="widefat uep-course-date-input" id="uep-course-end-date" type="text" name="uep-course-end-date" placeholder="Format: February 18, 2014" value="<?php echo date( 'F d, Y', $course_end_date ); ?>" />
 
-        <label for="uep-event-venue"><?php _e( 'Course Location:', 'uep' ); ?></label>
-        <input class="widefat" id="uep-event-venue" type="text" name="uep-event-venue" placeholder="eg. Nairobi" value="<?php echo $event_venue; ?>" />
+        <label for="uep-course-venue"><?php _e( 'Course Location:', 'uep' ); ?></label>
+        <input class="widefat" id="uep-course-venue" type="text" name="uep-course-venue" placeholder="eg. Nairobi" value="<?php echo $course_venue; ?>" />
  
     <?php } ?>
  
@@ -99,9 +99,9 @@ function uep_render_event_info_metabox( $post ) {
 function uep_admin_script_style( $hook ) {
     global $post_type;
  
-    if ( ( 'post.php' == $hook || 'post-new.php' == $hook ) && ( 'event' == $post_type ) ) {
+    if ( ( 'post.php' == $hook || 'post-new.php' == $hook ) && ( 'course' == $post_type ) ) {
         wp_enqueue_script(
-            'upcoming-events',
+            'upcoming-courses',
             SCRIPTS . 'script.js',
             array( 'jquery', 'jquery-ui-datepicker' ),
             '1.0',
@@ -119,18 +119,18 @@ function uep_admin_script_style( $hook ) {
 }
 add_action( 'admin_enqueue_scripts', 'uep_admin_script_style' );
 
-function uep_save_event_info( $post_id ) {
+function uep_save_course_info( $post_id ) {
  
-    // checking if the post being saved is an 'event',
+    // checking if the post being saved is an 'course',
     // if not, then return
-    if ( 'event' != $_POST['post_type'] ) {
+    if ( 'course' != $_POST['post_type'] ) {
         return;
     }
  
     // checking for the 'save' status
     $is_autosave = wp_is_post_autosave( $post_id );
     $is_revision = wp_is_post_revision( $post_id );
-    $is_valid_nonce = ( isset( $_POST['uep-event-info-nonce'] ) && ( wp_verify_nonce( $_POST['uep-event-info-nonce'], basename( __FILE__ ) ) ) ) ? true : false;
+    $is_valid_nonce = ( isset( $_POST['uep-course-info-nonce'] ) && ( wp_verify_nonce( $_POST['uep-course-info-nonce'], basename( __FILE__ ) ) ) ) ? true : false;
  
     // exit depending on the save status or if the nonce is not valid
     if ( $is_autosave || $is_revision || ! $is_valid_nonce ) {
@@ -138,46 +138,46 @@ function uep_save_event_info( $post_id ) {
     }
  
     // checking for the values and performing necessary actions
-    if ( isset( $_POST['uep-event-start-date'] ) ) {
-        update_post_meta( $post_id, 'event-start-date', strtotime( $_POST['uep-event-start-date'] ) );
+    if ( isset( $_POST['uep-course-start-date'] ) ) {
+        update_post_meta( $post_id, 'course-start-date', strtotime( $_POST['uep-course-start-date'] ) );
     }
  
-    if ( isset( $_POST['uep-event-end-date'] ) ) {
-        update_post_meta( $post_id, 'event-end-date', strtotime( $_POST['uep-event-end-date'] ) );
+    if ( isset( $_POST['uep-course-end-date'] ) ) {
+        update_post_meta( $post_id, 'course-end-date', strtotime( $_POST['uep-course-end-date'] ) );
     }
  
-    if ( isset( $_POST['uep-event-venue'] ) ) {
-        update_post_meta( $post_id, 'event-venue', sanitize_text_field( $_POST['uep-event-venue'] ) );
+    if ( isset( $_POST['uep-course-venue'] ) ) {
+        update_post_meta( $post_id, 'course-venue', sanitize_text_field( $_POST['uep-course-venue'] ) );
     }
 }
-add_action( 'save_post', 'uep_save_event_info' );
+add_action( 'save_post', 'uep_save_course_info' );
 
 function uep_custom_columns_head( $defaults ) {
     unset( $defaults['date'] );
  
-    $defaults['event_start_date'] = __( 'Start Date', 'uep' );
-    $defaults['event_end_date'] = __( 'End Date', 'uep' );
-    $defaults['event_venue'] = __( 'Venue', 'uep' );
+    $defaults['course_start_date'] = __( 'Start Date', 'uep' );
+    $defaults['course_end_date'] = __( 'End Date', 'uep' );
+    $defaults['course_venue'] = __( 'Venue', 'uep' );
  
     return $defaults;
 }
-add_filter( 'manage_edit-event_columns', 'uep_custom_columns_head', 10 );
+add_filter( 'manage_edit-course_columns', 'uep_custom_columns_head', 10 );
 
 function uep_custom_columns_content( $column_name, $post_id ) {
  
-    if ( 'event_start_date' == $column_name ) {
-        $start_date = get_post_meta( $post_id, 'event-start-date', true );
+    if ( 'course_start_date' == $column_name ) {
+        $start_date = get_post_meta( $post_id, 'course-start-date', true );
         echo date( 'F d, Y', $start_date );
     }
  
-    if ( 'event_end_date' == $column_name ) {
-        $end_date = get_post_meta( $post_id, 'event-end-date', true );
+    if ( 'course_end_date' == $column_name ) {
+        $end_date = get_post_meta( $post_id, 'course-end-date', true );
         echo date( 'F d, Y', $end_date );
     }
  
-    if ( 'event_venue' == $column_name ) {
-        $venue = get_post_meta( $post_id, 'event-venue', true );
+    if ( 'course_venue' == $column_name ) {
+        $venue = get_post_meta( $post_id, 'course-venue', true );
         echo $venue;
     }
 }
-add_action( 'manage_event_posts_custom_column', 'uep_custom_columns_content', 10, 2 );
+add_action( 'manage_course_posts_custom_column', 'uep_custom_columns_content', 10, 2 );
