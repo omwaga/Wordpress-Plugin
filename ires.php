@@ -3,7 +3,7 @@
 /**
 * Plugin Name: IRES PLUGIN
 * Plugin URI: http://indepthresearch.org/
-* Description: Ires plugin description of what your plugin does here.
+* Description: Ires plugin description of what the plugin does here.
 * Version: 1.0.0
 * Author: IRES
 * Author URI: http://indepthresearch.org/
@@ -83,10 +83,10 @@ function uep_render_course_info_metabox( $post ) {
      ?>
  
 <label for="uep-course-start-date"><?php _e( 'Course Start Date:', 'uep' ); ?></label>
-        <input class="widefat uep-course-date-input" id="uep-course-start-date" type="text" name="uep-course-start-date" placeholder="Format: February 18, 2014" value="<?php echo date( 'F d, Y', $course_start_date ); ?>" />
+        <input class="widefat uep-course-date-input" id="uep-course-start-date" type="text" name="uep-course-start-date" placeholder="Format: February 18, 2020" value="<?php echo date( 'F d, Y', $course_start_date ); ?>" />
  
 <label for="uep-course-end-date"><?php _e( 'Course End Date:', 'uep' ); ?></label>
-        <input class="widefat uep-course-date-input" id="uep-course-end-date" type="text" name="uep-course-end-date" placeholder="Format: February 18, 2014" value="<?php echo date( 'F d, Y', $course_end_date ); ?>" />
+        <input class="widefat uep-course-date-input" id="uep-course-end-date" type="text" name="uep-course-end-date" placeholder="Format: February 18, 2020" value="<?php echo date( 'F d, Y', $course_end_date ); ?>" />
 
         <label for="uep-course-venue"><?php _e( 'Course Location:', 'uep' ); ?></label>
         <input class="widefat" id="uep-course-venue" type="text" name="uep-course-venue" placeholder="eg. Nairobi" value="<?php echo $course_venue; ?>" />
@@ -181,3 +181,31 @@ function uep_custom_columns_content( $column_name, $post_id ) {
     }
 }
 add_action( 'manage_course_posts_custom_column', 'uep_custom_columns_content', 10, 2 );
+
+
+//Course Categories section
+function wporg_register_taxonomy_category() {
+     $labels = array(
+         'name'              => _x( 'Categories', 'taxonomy general name' ),
+         'singular_name'     => _x( 'Category', 'taxonomy singular name' ),
+         'search_items'      => __( 'Search Course Categories' ),
+         'all_items'         => __( 'All Course Categories' ),
+         'parent_item'       => __( 'Parent Category' ),
+         'parent_item_colon' => __( 'Parent Category:' ),
+         'edit_item'         => __( 'Edit Course Category' ),
+         'update_item'       => __( 'Update Course Category' ),
+         'add_new_item'      => __( 'Add New Course Category' ),
+         'new_item_name'     => __( 'New Course Category Name' ),
+         'menu_name'         => __( 'Course Categories' ),
+     );
+     $args   = array(
+         'hierarchical'      => true, // make it hierarchical (like categories)
+         'labels'            => $labels,
+         'show_ui'           => true,
+         'show_admin_column' => true,
+         'query_var'         => true,
+         'rewrite'           => [ 'slug' => 'course_category' ],
+     );
+     register_taxonomy( 'category', [ 'course' ], $args );
+}
+add_action( 'init', 'wporg_register_taxonomy_category' );
